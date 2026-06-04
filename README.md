@@ -14,7 +14,7 @@ An intelligent, real-time traffic signal control system powered by Computer Visi
 The foundation of any good Computer Vision model is its dataset. For this project, a generic dataset was not sufficient because Indian traffic conditions (specifically the types of vehicles and lane discipline) are highly unique.
 
 *   **Data Collection**: We manually collected live traffic footage and images specifically from various intersections in **Gandhinagar, Gujarat**.
-*   **Dataset Size**: The dataset consists of over **1,500+ annotated images** extracted from these real-world traffic videos.
+*   **Dataset Size**: The dataset consists of over **700+ annotated images** extracted from these real-world traffic videos.
 *   **Classes**: We manually annotated 5 distinct classes that are highly relevant to Indian roads:
     1.  `Car`
     2.  `Bus`
@@ -28,7 +28,6 @@ The foundation of any good Computer Vision model is its dataset. For this projec
 
 The model used is **YOLOv8** (You Only Look Once), chosen for its state-of-the-art real-time object detection capabilities. 
 
-### Why YOLOv8 instead of YOLOv11?
 While YOLOv11 is newer, **YOLOv8** was strategically chosen for this specific engineering use case for several logical reasons:
 1. **Computational Efficiency (Lightweight)**: Our system processes **4 concurrent video streams** simultaneously. YOLOv11 has a heavier architectural overhead. YOLOv8 offers an exceptional balance of high accuracy while remaining lightweight enough to maintain >30 FPS across multiple feeds on standard hardware.
 2. **Edge Deployment Readiness**: Real-world traffic systems run on edge hardware (like NVIDIA Jetson Nanos) mounted on poles, not cloud servers. YOLOv8 has immense maturity and community support for highly optimized TensorRT/ONNX exports specifically meant for edge devices.
@@ -54,19 +53,19 @@ The model achieved excellent precision and recall across all 5 classes, proving 
 ### Training Metrics (Results Graph)
 Below is the training output graph showing the steady decrease in loss (box loss, objectness loss, and classification loss) alongside the increase in mAP (Mean Average Precision) over the epochs. For object detection, **mAP** acts as our primary accuracy metric.
 
-![Training Results](runs/detect/traffic_camera_models/vehicle_detector_v1/results.png)
+![Training Results](assets/results.png)
 *(Fig 1: YOLOv8 Training Results over epochs showing convergence and high mAP50-95 scores)*
 
 ### F1 Confidence Curve
 The F1 score evaluates the harmonic mean of Precision and Recall. The curve below demonstrates the optimal confidence threshold where the model perfectly balances detecting as many vehicles as possible (Recall) without making false-positive predictions (Precision).
 
-![F1 Curve](runs/detect/traffic_camera_models/vehicle_detector_v1/BoxF1_curve.png)
+![F1 Curve](assets/BoxF1_curve.png)
 *(Fig 2: F1-Confidence Curve showing peak F1-Score across all vehicle classes)*
 
 ### Confusion Matrix
 The confusion matrix below demonstrates the model's accuracy in distinguishing between similar classes (e.g., differentiating a large Car from an Auto-Rikshaw, or a Bus from a Truck).
 
-![Confusion Matrix](runs/detect/traffic_camera_models/vehicle_detector_v1/confusion_matrix.png)
+![Confusion Matrix](assets/confusion_matrix.png)
 *(Fig 3: Normalized Confusion Matrix showing high true-positive rates across all 5 classes)*
 
 ---
