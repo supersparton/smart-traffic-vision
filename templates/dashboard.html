@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic Dashboard | Bangalore AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Adaptive Traffic Control System</h1>
+            <p>Smart Signal Logic based on Real-time Vehicle Density</p>
+        </header>
+
+        <!-- Upload Section -->
+        <section id="upload-section" class="card">
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-upload">📁 Upload Video</button>
+                <button class="tab-btn" id="tab-live">📱 Live Stream (Pair Code)</button>
+            </div>
+
+            <div id="upload-mode-content">
+                <div class="card" style="margin-top: 1rem; border: 1px solid rgba(56, 189, 248, 0.2);">
+                    <h3 style="text-align: center; margin-bottom: 1.5rem;">Intersection Video Upload</h3>
+                    <div class="upload-grid">
+                        <div class="upload-item" onclick="document.getElementById('video-North').click()">
+                            <label>North Lane</label>
+                            <div class="icon">📁</div>
+                            <small id="name-North">No video selected</small>
+                            <input type="file" id="video-North" hidden accept="video/*" onchange="updateFileName('North')">
+                        </div>
+                        <div class="upload-item" onclick="document.getElementById('video-East').click()">
+                            <label>East Lane</label>
+                            <div class="icon">📁</div>
+                            <small id="name-East">No video selected</small>
+                            <input type="file" id="video-East" hidden accept="video/*" onchange="updateFileName('East')">
+                        </div>
+                        <div class="upload-item" onclick="document.getElementById('video-South').click()">
+                            <label>South Lane</label>
+                            <div class="icon">📁</div>
+                            <small id="name-South">No video selected</small>
+                            <input type="file" id="video-South" hidden accept="video/*" onchange="updateFileName('South')">
+                        </div>
+                        <div class="upload-item" onclick="document.getElementById('video-West').click()">
+                            <label>West Lane</label>
+                            <div class="icon">📁</div>
+                            <small id="name-West">No video selected</small>
+                            <input type="file" id="video-West" hidden accept="video/*" onchange="updateFileName('West')">
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <p style="opacity: 0.6; font-size: 0.9rem; margin-bottom: 1rem;">Select at least 1 video to start</p>
+                        <button class="btn-primary" id="start-analysis-btn">Start All-Way Analysis</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="live-mode-content" class="hidden">
+                <div class="card" style="margin-top: 1rem; border: 1px solid rgba(56, 189, 248, 0.2);">
+                    <h3 style="text-align: center; margin-bottom: 1.5rem;">4-Direction Pairing</h3>
+                    <div class="code-grid">
+                        <div class="code-item">
+                            <label>Nord (N)</label>
+                            <h2 id="code-North">------</h2>
+                            <button class="copy-btn" onclick="copyLink('North')">📋 Copy Link</button>
+                        </div>
+                        <div class="code-item">
+                            <label>East (E)</label>
+                            <h2 id="code-East">------</h2>
+                            <button class="copy-btn" onclick="copyLink('East')">📋 Copy Link</button>
+                        </div>
+                        <div class="code-item">
+                            <label>South (S)</label>
+                            <h2 id="code-South">------</h2>
+                            <button class="copy-btn" onclick="copyLink('South')">📋 Copy Link</button>
+                        </div>
+                        <div class="code-item">
+                            <label>West (W)</label>
+                            <h2 id="code-West">------</h2>
+                            <button class="copy-btn" onclick="copyLink('West')">📋 Copy Link</button>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <p style="opacity: 0.6; font-size: 0.9rem; margin-bottom: 1rem;">Each phone should visit the unique URL for its direction</p>
+                        <button class="btn-primary" id="start-live-btn">Activate All 4 Streams</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading Overlay (OUTSIDE upload-section so it stays visible) -->
+        <section id="upload-status" class="hidden" style="text-align: center; padding: 5rem 2rem;">
+            <div class="spinner"></div>
+            <h3 style="margin-top: 2rem;">Uploading & Processing Videos...</h3>
+            <p style="color: var(--text-dim); margin-top: 0.5rem;">The AI model is loading your footage. This may take a few seconds.</p>
+        </section>
+
+        <!-- Dashboard Section (Hidden until upload) -->
+        <section id="dashboard-section" class="hidden">
+            <div class="main-grid">
+                <!-- Left: Simulation Canvas -->
+                <div class="card sim-card">
+                    <div class="card-header">
+                        <h3>Intersection Simulation</h3>
+                        <div id="global-timer" class="timer-badge">--</div>
+                    </div>
+                    <canvas id="simCanvas"></canvas>
+                </div>
+
+                <!-- Right: Live Feed & Stats -->
+                <div class="side-panel">
+                    <div class="card feed-card">
+                        <h3>Monitor Wall - 4 Directions</h3>
+                        <div class="video-grid">
+                            <div class="video-container" id="container-North">
+                                <img id="frame-North" src="" alt="N">
+                                <div class="overlay-label">North</div>
+                            </div>
+                            <div class="lane-mini-stats" id="stats-North">Detecting...</div>
+                            
+                            <div class="video-container" id="container-East">
+                                <img id="frame-East" src="" alt="E">
+                                <div class="overlay-label">East</div>
+                            </div>
+                            <div class="lane-mini-stats" id="stats-East">Detecting...</div>
+
+                            <div class="video-container" id="container-South">
+                                <img id="frame-South" src="" alt="S">
+                                <div class="overlay-label">South</div>
+                            </div>
+                            <div class="lane-mini-stats" id="stats-South">Detecting...</div>
+
+                            <div class="video-container" id="container-West">
+                                <img id="frame-West" src="" alt="W">
+                                <div class="overlay-label">West</div>
+                            </div>
+                            <div class="lane-mini-stats" id="stats-West">Detecting...</div>
+                        </div>
+                    </div>
+
+                    <div class="card stats-card">
+                        <h3>Traffic Density Stats</h3>
+                        <div id="stats-container">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='simulation.js') }}"></script>
+</body>
+</html>

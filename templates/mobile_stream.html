@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic | Mobile Camera</title>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        video { width: 90%; max-width: 400px; border-radius: 1rem; border: 2px solid #38bdf8; }
+        .status { margin: 1rem; padding: 0.5rem 1rem; border-radius: 2rem; background: #1e293b; font-size: 0.9rem; }
+        .btn { background: #38bdf8; color: #0f172a; border: none; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Mobile Traffic Camera</h2>
+    <div class="status" id="status">Pairing Code: {{ pair_code }}</div>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none"></canvas>
+    <div id="controls" style="margin-top: 1rem;">
+        <button class="btn" id="startBtn">Start Streaming</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const status = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const pairCode = "{{ pair_code }}";
+
+        startBtn.onclick = async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            video.srcObject = stream;
+            startBtn.style.display = 'none';
+            status.innerText = "Streaming Live...";
+            
+            setInterval(captureAndSend, 200); // 5 FPS is enough for traffic density
+        };
+
+        function captureAndSend() {
+            canvas.width = video.videoWidth / 2; // Downscale for bandwidth
+            canvas.height = video.videoHeight / 2;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const base64 = canvas.toDataURL('image/jpeg', 0.5);
+            fetch(`/upload_live/${pairCode}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: base64 })
+            });
+        }
+    </script>
+</body>
+</html>
